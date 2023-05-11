@@ -158,6 +158,7 @@ module ActiveModel
         # Better solutions much appreciated!
         @object = serializer.object
         @scope = serializer.scope
+        @instance_options = serializer.instance_options
 
         block_value = instance_exec(serializer, &block) if block
         return unless include_data?(include_slice)

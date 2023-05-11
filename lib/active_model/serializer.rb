@@ -203,11 +203,11 @@ module ActiveModel
     # @example
     #   class AdminAuthorSerializer < ActiveModel::Serializer
     #     attributes :id, :name, :recent_edits
-    def self.attributes(*attrs)
-      attrs = attrs.first if attrs.first.class == Array
+    def self.attributes(*attrs, &block)
+      attrs = attrs.first  if attrs.first.class == Array
 
       attrs.each do |attr|
-        attribute(attr)
+        attribute(attr, {}, &block)
       end
     end
 
@@ -311,7 +311,7 @@ module ActiveModel
 
     # END SERIALIZER MACROS
 
-    attr_accessor :object, :root, :scope
+    attr_accessor :object, :root, :scope, :instance_options
 
     # `scope_name` is set as :current_user by default in the controller.
     # If the instance does not have a method named `scope_name`, it
@@ -333,10 +333,16 @@ module ActiveModel
 
     # Return the +attributes+ of +object+ as presented
     # by the serializer.
+    # Add by Guy: 
+    # Skip if the value is :api_blacklist
+
     def attributes(requested_attrs = nil, reload = false)
       @attributes = nil if reload
       @attributes ||= self.class._attributes_data.each_with_object({}) do |(key, attr), hash|
+
         next if attr.excluded?(self)
+        value = attr.value(self)
+        next if value == :api_blacklist
         next unless requested_attrs.nil? || requested_attrs.include?(key)
         hash[key] = attr.value(self)
       end
@@ -422,6 +428,6 @@ module ActiveModel
 
     protected
 
-    attr_accessor :instance_options, :instance_reflections
+    attr_accessor :instance_reflections
   end
 end

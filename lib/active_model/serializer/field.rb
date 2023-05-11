@@ -20,7 +20,7 @@ module ActiveModel
       #
       def value(serializer)
         if block
-          serializer.instance_eval(&block)
+          serializer.instance_exec(name, &block)
         else
           serializer.read_attribute_for_serialization(name)
         end
